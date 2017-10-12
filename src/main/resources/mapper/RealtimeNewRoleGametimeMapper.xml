@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gmtool.dao.RealTimeNewRoleGameTimeMapper">
+ 
+  <resultMap id="GameTimeMap" type="RealTimeNewRoleGameTime" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="DATE_INFO" property="dateInfo" jdbcType="VARCHAR" />
+    <result column="CONTAINER_NAME" property="containerName" jdbcType="VARCHAR" />
+    <result column="CHANNEL" property="channel" jdbcType="VARCHAR" />
+    <result column="CHANNELTAG" property="channelTag" jdbcType="VARCHAR" />
+    <result column="NEW_ROLE" property="newRole" jdbcType="BIGINT" />
+    <result column="GAME_CNT" property="gameCnt" jdbcType="BIGINT" />
+    <result column="GAME_TIME" property="gameTime" jdbcType="BIGINT" />
+  </resultMap>
+
+  <select id="findNewRoleGametime" parameterType="pd" resultMap="GameTimeMap">
+	SELECT DATE_INFO, 
+    <if test="containerName != '' and containerName != null">
+      DICTIONARY_CONTAINER.CONTAINER_NAME AS CONTAINER_NAME,
+    </if>
+    <if test="channel != '' and channel != null">
+      DICTIONARY_CHANNEL.CHANNEL_NAME AS CHANNEL,
+    </if>
+    <if test="channelTag != '' and channelTag != null">
+      CHANNELTAG,
+    </if>
+    sum(NEW_ROLE) AS NEW_ROLE,sum(GAME_CNT) AS GAME_CNT,sum(GAME_TIME) AS GAME_TIME
+    
+    FROM REALTIME_NEW_ROLE_GAMETIME
+    <if test="containerName != '' and containerName != null">
+      LEFT JOIN DICTIONARY_CONTAINER
+      ON REALTIME_NEW_ROLE_GAMETIME.CONTAINER_NAME = DICTIONARY_CONTAINER.CONTAINER_VALUE
+    </if>
+    <if test="channel != '' and channel != null">
+      LEFT JOIN DICTIONARY_CHANNEL
+      ON REALTIME_NEW_ROLE_GAMETIME.CHANNEL = DICTIONARY_CHANNEL.CHANNEL_VALUE
+    </if>
+    WHERE     1=1
+    <if test="startD != '' and startD != null">
+      <if test="endD != '' and endD != null">
+        AND REALTIME_NEW_ROLE_GAMETIME.DATE_INFO BETWEEN #{startD} AND #{endD}
+      </if>
+    </if>
+    <if test="containerName != '' and containerName != null and containerName != 'all'">
+      AND REALTIME_NEW_ROLE_GAMETIME.CONTAINER_NAME = #{containerName}
+    </if>
+    <if test="channel != '' and channel != null and channel != 'all'">
+      AND REALTIME_NEW_ROLE_GAMETIME.CHANNEL = #{channel}
+    </if>
+    <if test="channelTag != '' and channelTag != null and channelTag != 'all'">
+      and REALTIME_NEW_ROLE_GAMETIME.CHANNELTAG in
+      <foreach item="item" index="index" collection="channelTag" open="(" separator="," close=")">
+        #{item}
+      </foreach>
+    </if>
+    GROUP BY 
+    <if test="containerName == 'all'">
+      REALTIME_NEW_ROLE_GAMETIME.CONTAINER_NAME,
+    </if>
+    <if test="channel == 'all'">
+      REALTIME_NEW_ROLE_GAMETIME.CHANNEL,
+    </if>
+    <if test="channelTag != '' and channelTag != null">
+      REALTIME_NEW_ROLE_GAMETIME.CHANNELTAG,
+    </if>
+    REALTIME_NEW_ROLE_GAMETIME.DATE_INFO
+    ORDER BY DATE_INFO ASC
+  </select>
+</mapper>

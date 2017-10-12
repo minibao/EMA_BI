@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gmtool.dao.UserGameMapper">
+    
+  <resultMap type="UserGameBasicInfo" id="UserGameBasicInfoMap"  >
+    <id column="ID" property="id" jdbcType="BIGINT" />
+    <result column="ROLE_ID" property="roleId" jdbcType="BIGINT" />
+    <result column="CHANNEL" property="channel" jdbcType="VARCHAR" />
+    <result column="CHANNELTAG" property="channelTag" jdbcType="VARCHAR" />
+    <result column="CONTAINER_NAME" property="containerName" jdbcType="VARCHAR" />
+    <result column="VOCATION" property="vocation" jdbcType="BIGINT" />
+    <result column="LV" property="lv" jdbcType="BIGINT" />
+    <result column="IS_RETAIN" property="isRetain" jdbcType="VARCHAR" />
+    <result column="is_PAY" property="isPay" jdbcType="VARCHAR" />
+    <result column="ROLE_CREATE_TIME" property="roleCreateTime" jdbcType="VARCHAR" />
+    <result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="UPDATE_TIME" property="updateTime" jdbcType="TIMESTAMP" />
+  </resultMap> 
+
+  <select id="findUserByServerAndChannel" parameterType="pd" resultMap="UserGameBasicInfoMap">
+    SELECT * from USER_GAME_BASIC_INFO
+    WHERE 1=1
+    <if test="channel != '' and channel != null">
+      AND CHANNEL = #{channel}
+    </if>
+    <if test="channelTag != '' and channelTag != null">
+      AND CHANNELTAG = #{channelTag}
+    </if>
+    <if test="containerName != '' and containerName != null">
+      AND CONTAINER_NAME = #{containerName}
+    </if>
+  </select>
+
+</mapper>

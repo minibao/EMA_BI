@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gmtool.dao.DictionaryMapper">
+
+  <resultMap type="DictionaryChanneltag" id="DictionaryChanneltagMap">
+    <id column="ID" property="id" jdbcType="BIGINT" />
+    <result column="CHANNELTAG_NAME" property="channeltagName" jdbcType="VARCHAR" />
+    <result column="CHANNELTAG_VALUE" property="channeltagValue" jdbcType="VARCHAR"  />
+    <result column="LAST_UPDATE" property="lastTime" jdbcType="DATE" javaType="java.util.Date" />
+  </resultMap>
+  
+  <select id = "findDictionarytag" parameterType="pd" resultType="com.gmtool.entity.DictionaryChanneltag">
+  		select 
+  			CHANNELTAG_NAME as channeltagName,
+  			CHANNELTAG_VALUE as channeltagValue,
+  			LAST_UPDATE as lastTime 
+  		from DICTIONARY_CHANNELTAG where CHANNELTAG_VALUE = #{channeltagValue}
+  </select>
+  
+  <insert id="insertChanneltag" parameterType="pd">
+  		insert into DICTIONARY_CHANNELTAG 
+	  		(CHANNELTAG_NAME,CHANNELTAG_VALUE,LAST_UPDATE) 
+	  			values 
+	  		(#{channeltagName},#{channeltagValue},#{lastTime})
+  </insert>
+  
+  <update id="updateChanneltag" parameterType="pd">
+  		update DICTIONARY_CHANNELTAG set 
+  			CHANNELTAG_NAME = #{channeltagName} , 
+  			LAST_UPDATE = #{lastTime}
+  		where CHANNELTAG_VALUE = #{channeltagValue}
+  </update>
+  
+  <select id = "findAllDictionary" resultMap="DictionaryChanneltagMap">
+  		select 
+  			ID,
+  			CHANNELTAG_NAME ,
+  			CHANNELTAG_VALUE ,
+  			LAST_UPDATE 
+  		from DICTIONARY_CHANNELTAG
+  </select>
+  
+  <delete id="deleteDictionaryChannelTag" >
+  		delete from DICTIONARY_CHANNELTAG where 
+        id in
+          <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+            #{item}
+          </foreach>
+  </delete>
+  
+  <select id = "findAllDictionaryChannel" parameterType="pd" resultType="com.gmtool.entity.DictionaryChannel">
+  		select 
+  			ID as id,
+  			CHANNEL_NAME as channelName,
+  			CHANNEL_VALUE as channelValue
+  		from DICTIONARY_CHANNEL 
+  </select>
+</mapper>

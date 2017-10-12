@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gmtool.dao.UserMissionMapper">
+
+   <resultMap type="UserMission" id="UserMissionMap"  >
+    <result column="DATE_INFO" property="dateInfo" jdbcType="VARCHAR" />
+    <result column="CONTAINER_NAME" property="containerName" jdbcType="VARCHAR" />
+    <result column="CHANNEL" property="channel" jdbcType="VARCHAR" />
+    <result column="CHANNELTAG" property="channelTag" jdbcType="VARCHAR" />
+    <result column="VOCATION" property="vocation" jdbcType="VARCHAR" />
+    <result column="IS_RETAIN" property="isRetain" jdbcType="VARCHAR" />
+    <result column="IS_PAY" property="isPay" jdbcType="VARCHAR" />
+    <result column="MISSION_PROGRESS" property="mission" jdbcType="VARCHAR" />
+    <result column="NUM" property="num" jdbcType="BIGINT" />
+  </resultMap> 
+  
+  <select id="findMission" parameterType="pd" resultMap="UserMissionMap">
+    SELECT DATE_INFO, 
+    <if test="containerName != '' and containerName != null">
+      DICTIONARY_CONTAINER.CONTAINER_NAME AS CONTAINER_NAME,
+    </if>
+    <if test="channel != '' and channel != null">
+      DICTIONARY_CHANNEL.CHANNEL_NAME AS CHANNEL,
+    </if>
+    <if test="channelTag != '' and channelTag != null">
+      CHANNELTAG,
+    </if>
+    <if test="vocation != '' and vocation != null">
+      VOCATION,
+    </if>
+    <if test="isRetain != '' and isRetain != null">
+      IS_RETAIN,
+    </if>
+    <if test="isPay != '' and isPay != null">
+      IS_PAY,
+    </if>
+      MISSION_PROGRESS, SUM(NUM) NUM
+    FROM USER_MISSION_DISTRIBUTE
+    <if test="containerName != '' and containerName != null">
+      LEFT JOIN DICTIONARY_CONTAINER
+      ON USER_MISSION_DISTRIBUTE.CONTAINER_NAME = DICTIONARY_CONTAINER.CONTAINER_VALUE
+    </if>
+    <if test="channel != '' and channel != null">
+      LEFT JOIN DICTIONARY_CHANNEL
+      ON USER_MISSION_DISTRIBUTE.CHANNEL = DICTIONARY_CHANNEL.CHANNEL_VALUE
+    </if>
+    WHERE DATE_INFO = #{dateInfo} AND MISSION_PROGRESS IS NOT NULL
+    <if test="containerName != '' and containerName != null and containerName != 'all'">
+      AND USER_MISSION_DISTRIBUTE.CONTAINER_NAME = #{containerName}
+    </if>
+    <if test="channel != '' and channel != null and channel != 'all'">
+      AND USER_MISSION_DISTRIBUTE.CHANNEL = #{channel}
+    </if>
+    <if test="channelTag != '' and channelTag != null and channelTag != 'all'">
+      and CHANNELTAG in
+      <foreach item="item" index="index" collection="channelTag" open="(" separator="," close=")">
+        #{item}
+      </foreach>
+    </if>
+    <if test="vocation != '' and vocation != null and vocation != 'all'">
+      AND VOCATION = #{vocation}
+    </if>
+    <if test="isRetain != '' and isRetain != null and isRetain != 'all'">
+      AND IS_RETAIN = #{isRetain}
+    </if>
+    <if test="isPay != '' and isPay != null and isPay != 'all'">
+      AND IS_PAY = #{isPay}
+    </if>
+    GROUP BY
+    <if test="containerName == 'all'">
+      USER_MISSION_DISTRIBUTE.CONTAINER_NAME,
+    </if>
+    <if test="channel == 'all'">
+      USER_MISSION_DISTRIBUTE.CHANNEL,
+    </if>
+    <if test="channelTag != '' and channelTag != null">
+      CHANNELTAG,
+    </if>
+    <if test="vocation == 'all'">
+      VOCATION,
+    </if>
+    <if test="isRetain == 'all'">
+      IS_RETAIN,
+    </if>
+    <if test="isPay == 'all'">
+      IS_PAY,
+    </if>
+      MISSION_PROGRESS
+    ORDER BY MISSION_PROGRESS
+  </select>
+
+  <select id="findMissionByCreateTime" parameterType="pd" resultMap="UserMissionMap">
+    SELECT
+    <if test="containerName != '' and containerName != null">
+      DICTIONARY_CONTAINER.CONTAINER_NAME AS CONTAINER_NAME,
+    </if>
+    <if test="channel != '' and channel != null">
+      DICTIONARY_CHANNEL.CHANNEL_NAME AS CHANNEL,
+    </if>
+    <if test="channelTag != '' and channelTag != null">
+      USER_GAME_BASIC_INFO.CHANNELTAG,
+    </if>
+    <if test="vocation != '' and vocation != null">
+      USER_GAME_BASIC_INFO.VOCATION,
+    </if>
+    <if test="isRetain != '' and isRetain != null">
+      USER_GAME_BASIC_INFO.IS_RETAIN,
+    </if>
+    <if test="isPay != '' and isPay != null">
+      USER_GAME_BASIC_INFO.IS_PAY,
+    </if>
+      MISSION_PROGRESS, COUNT(1) NUM
+    FROM USER_GAME_BASIC_INFO
+    JOIN USER_GAME_EXTRA_INFO_ES_ACTIVE
+    ON USER_GAME_EXTRA_INFO_ES_ACTIVE.ROLE_ID = USER_GAME_BASIC_INFO.ROLE_ID
+    <if test="containerName != '' and containerName != null">
+      LEFT JOIN DICTIONARY_CONTAINER
+      ON USER_GAME_BASIC_INFO.CONTAINER_NAME = DICTIONARY_CONTAINER.CONTAINER_VALUE
+    </if>
+    <if test="channel != '' and channel != null">
+      LEFT JOIN DICTIONARY_CHANNEL
+      ON USER_GAME_BASIC_INFO.CHANNEL = DICTIONARY_CHANNEL.CHANNEL_VALUE
+    </if>
+    WHERE
+      USER_GAME_BASIC_INFO.ROLE_CREATE_TIME BETWEEN #{startD} AND #{endD}
+      AND MISSION_PROGRESS IS NOT NULL
+      <if test="containerName != '' and containerName != null and containerName != 'all'">
+        AND USER_GAME_BASIC_INFO.CONTAINER_NAME = #{containerName}
+      </if>
+      <if test="channel != '' and channel != null and channel != 'all'">
+        AND USER_GAME_BASIC_INFO.CHANNEL = #{channel}
+      </if>
+    <if test="channelTag != '' and channelTag != null and channelTag != 'all'">
+      and USER_GAME_BASIC_INFO.CHANNELTAG in
+      <foreach item="item" index="index" collection="channelTag" open="(" separator="," close=")">
+        #{item}
+      </foreach>
+    </if>
+      <if test="vocation != '' and vocation != null and vocation != 'all'">
+        AND USER_GAME_BASIC_INFO.VOCATION = #{vocation}
+      </if>
+      <if test="isRetain != '' and isRetain != null and isRetain != 'all'">
+        AND USER_GAME_BASIC_INFO.IS_RETAIN = #{isRetain}
+      </if>
+      <if test="isPay != '' and isPay != null and isPay != 'all'">
+        AND USER_GAME_BASIC_INFO.IS_PAY = #{isPay}
+      </if>
+      GROUP BY
+    <if test="containerName == 'all'">
+      USER_GAME_BASIC_INFO.CONTAINER_NAME,
+    </if>
+    <if test="channel == 'all'">
+      USER_GAME_BASIC_INFO.CHANNEL,
+    </if>
+    <if test="channelTag != '' and channelTag != null">
+      USER_GAME_BASIC_INFO.CHANNELTAG,
+    </if>
+    <if test="vocation == 'all'">
+      USER_GAME_BASIC_INFO.VOCATION,
+    </if>
+    <if test="isRetain == 'all'">
+      USER_GAME_BASIC_INFO.IS_RETAIN,
+    </if>
+    <if test="isPay == 'all'">
+      USER_GAME_BASIC_INFO.IS_PAY,
+    </if>
+      MISSION_PROGRESS
+    ORDER BY MISSION_PROGRESS
+  </select>
+
+</mapper>

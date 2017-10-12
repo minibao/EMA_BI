@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gmtool.dao.DayOnlineMapper">
+ 
+  <resultMap  type="DayOnline" id="DayOnlineMap"  >
+    <id column="ID" property="id" jdbcType="BIGINT" />
+    <result column="CONTAINER_NAME" property="containerName" jdbcType="VARCHAR" />
+    <result column="CHANNEL" property="channel" jdbcType="VARCHAR" />
+    <result column="DATE_INFO" property="dateInfo" jdbcType="VARCHAR" />
+    <result column="TIME_INFO" property="timeInfo" jdbcType="VARCHAR" />
+    <result column="ONLINENUM" property="onlineNum" jdbcType="BIGINT" />
+    <result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="UPDATE_TIME" property="updateTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+  <sql id="Base_Column_List" >
+    CONTAINER_NAME, CHANNEL, DATE_INFO, TIME_INFO, ONLINENUM
+  </sql>
+
+  <select id="findOnline" parameterType="pd" resultMap="DayOnlineMap">
+    SELECT CONTAINER_NAME, CHANNEL, DATE_INFO, TIME_INFO, SUM(ONLINENUM) ONLINENUM
+    FROM DAY_ONLINE_NUM
+    WHERE DATE_INFO = #{dateInfo}
+    <if test="channel != '' and channel != null">
+      AND CHANNEL = #{channel}
+    </if>
+    <if test="containerName != '' and containerName != null">
+      AND CONTAINER_NAME = #{containerName}
+    </if>
+    GROUP BY TIME_INFO
+    ORDER BY TIME_INFO ASC;
+  </select>
+
+</mapper>

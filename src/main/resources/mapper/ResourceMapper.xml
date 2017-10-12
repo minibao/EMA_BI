@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gmtool.dao.ResourceMapper">
+
+  <resultMap  type="DayResourceCirculate" id="DayResourceCirculateMap"  >
+    <result column="DATE_INFO" property="dateInfo" jdbcType="VARCHAR" />
+    <result column="CONTAINER_NAME" property="containerName" jdbcType="VARCHAR" />
+    <result column="CHANNEL" property="channel" jdbcType="VARCHAR" />
+    <result column="CHANNELTAG" property="channelTag" jdbcType="VARCHAR" />
+    <result column="CATEGORY" property="category" jdbcType="VARCHAR" />
+    <result column="RESOURCE_HOLD" property="resourceHold" jdbcType="BIGINT" />
+    <result column="RESOURCE_IN" property="resourceIn" jdbcType="BIGINT" />
+    <result column="RESOURCE_OUT" property="resourceOut" jdbcType="BIGINT" />
+  </resultMap>  
+  
+  <resultMap  type="ResourceInOutAmount" id="ResourceInOutAmountMap"  >
+    <result column="DATE_INFO" property="dateInfo" jdbcType="VARCHAR" />
+    <result column="CONTAINER_NAME" property="containerName" jdbcType="VARCHAR" />
+    <result column="CHANNEL" property="channel" jdbcType="VARCHAR" />
+    <result column="CHANNELTAG" property="channelTag" jdbcType="VARCHAR" />
+    <result column="IN_OUT_TYPE" property="inOutType" jdbcType="VARCHAR" />
+    <result column="RESOURCE_TYPE" property="resourceType" jdbcType="VARCHAR" />
+    <result column="CATEGORY" property="category" jdbcType="BIGINT" />
+    <result column="AMOUNT" property="amount" jdbcType="BIGINT" />
+  </resultMap>
+
+  <select id="findResourceCirculate" parameterType="pd" resultMap="DayResourceCirculateMap">
+    SELECT DATE_INFO, CATEGORY, 
+    <if test="containerName != '' and containerName != null">
+      DICTIONARY_CONTAINER.CONTAINER_NAME AS CONTAINER_NAME,
+    </if>
+    <if test="channel != '' and channel != null">
+      DICTIONARY_CHANNEL.CHANNEL_NAME AS CHANNEL,
+    </if>
+    <if test="channelTag != '' and channelTag != null">
+      CHANNELTAG,
+    </if>
+    SUM(RESOURCE_HOLD) RESOURCE_HOLD, SUM(RESOURCE_IN) RESOURCE_IN, SUM(RESOURCE_OUT) RESOURCE_OUT
+    
+    FROM DAY_RESOURCE_CIRCULATE
+    <if test="containerName != '' and containerName != null">
+      LEFT JOIN DICTIONARY_CONTAINER
+      ON DAY_RESOURCE_CIRCULATE.CONTAINER_NAME = DICTIONARY_CONTAINER.CONTAINER_VALUE
+    </if>
+    <if test="channel != '' and channel != null">
+      LEFT JOIN DICTIONARY_CHANNEL
+      ON DAY_RESOURCE_CIRCULATE.CHANNEL = DICTIONARY_CHANNEL.CHANNEL_VALUE
+    </if>
+    WHERE CATEGORY = #{category}
+    <if test="containerName != '' and containerName != null and containerName != 'all'">
+      AND DAY_RESOURCE_CIRCULATE.CONTAINER_NAME = #{containerName}
+    </if>
+    <if test="channel != '' and channel != null and channel != 'all'">
+      AND DAY_RESOURCE_CIRCULATE.CHANNEL = #{channel}
+    </if>
+    <if test="channelTag != '' and channelTag != null and channelTag != 'all'">
+      and DAY_RESOURCE_CIRCULATE.CHANNELTAG in
+      <foreach item="item" index="index" collection="channelTag" open="(" separator="," close=")">
+        #{item}
+      </foreach>
+    </if>
+    <if test="startD != '' and startD != null">
+    <if test="endD != '' and endD != null">
+      AND (DAY_RESOURCE_CIRCULATE.DATE_INFO BETWEEN #{startD} AND #{endD})
+    </if>
+    </if>
+    GROUP BY 
+    <if test="containerName == 'all'">
+      DAY_RESOURCE_CIRCULATE.CONTAINER_NAME,
+    </if>
+    <if test="channel == 'all'">
+      DAY_RESOURCE_CIRCULATE.CHANNEL,
+    </if>
+    <if test="channelTag != '' and channelTag != null">
+      DAY_RESOURCE_CIRCULATE.CHANNELTAG,
+    </if>
+    DAY_RESOURCE_CIRCULATE.DATE_INFO
+    ORDER BY DATE_INFO ASC;
+  </select>
+  
+  <select id="findResourceDetail" parameterType="pd" resultMap="ResourceInOutAmountMap">
+    SELECT DATE_INFO, 
+    <if test="containerName != '' and containerName != null">
+      DICTIONARY_CONTAINER.CONTAINER_NAME AS CONTAINER_NAME,
+    </if>
+    <if test="channel != '' and channel != null">
+      DICTIONARY_CHANNEL.CHANNEL_NAME AS CHANNEL,
+    </if>
+    <if test="channelTag != '' and channelTag != null">
+      CHANNELTAG,
+    </if>
+    IN_OUT_TYPE, DICTIONARY_RESOURCE.RESOURCE_KEY AS RESOURCE_TYPE, CATEGORY, SUM(AMOUNT) AMOUNT
+    FROM RESOURCE_IN_OUT_AMOUNT
+    LEFT JOIN DICTIONARY_RESOURCE
+    ON DICTIONARY_RESOURCE.RESOURCE_VALUE = RESOURCE_IN_OUT_AMOUNT.RESOURCE_TYPE
+    <if test="containerName != '' and containerName != null">
+      LEFT JOIN DICTIONARY_CONTAINER
+      ON DICTIONARY_CONTAINER.CONTAINER_VALUE = RESOURCE_IN_OUT_AMOUNT.CONTAINER_NAME
+    </if>
+    <if test="channel != '' and channel != null">
+      LEFT JOIN DICTIONARY_CHANNEL
+      ON DICTIONARY_CHANNEL.CHANNEL_VALUE = RESOURCE_IN_OUT_AMOUNT.CHANNEL
+    </if>
+    WHERE CATEGORY = #{category}
+    <if test="containerName != '' and containerName != null and containerName != 'all'">
+      AND RESOURCE_IN_OUT_AMOUNT.CONTAINER_NAME = #{containerName}
+    </if>
+    <if test="channel != '' and channel != null and channel != 'all'">
+      AND RESOURCE_IN_OUT_AMOUNT.CHANNEL = #{channel}
+    </if>
+    <if test="channelTag != '' and channelTag != null and channelTag != 'all'">
+      and RESOURCE_IN_OUT_AMOUNT.CHANNELTAG in
+      <foreach item="item" index="index" collection="channelTag" open="(" separator="," close=")">
+        #{item}
+      </foreach>
+    </if>
+    <if test="startD != '' and startD != null">
+      <if test="endD != '' and endD != null">
+        AND (DATE_INFO BETWEEN #{startD} AND #{endD})
+      </if>
+    </if>
+    GROUP BY DATE_INFO,
+    <if test="containerName == 'all'">
+      RESOURCE_IN_OUT_AMOUNT.CONTAINER_NAME,
+    </if>
+    <if test="channel == 'all'">
+      RESOURCE_IN_OUT_AMOUNT.CHANNEL,
+    </if>
+      <if test="channelTag != '' and channelTag != null">
+      RESOURCE_IN_OUT_AMOUNT.CHANNELTAG,
+    </if>
+      IN_OUT_TYPE,RESOURCE_TYPE
+    ORDER BY DATE_INFO ASC;
+  </select>
+
+</mapper>

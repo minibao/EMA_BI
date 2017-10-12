@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gmtool.dao.UserGameExtraInfoActiveMapper">
+
+  <resultMap id="GameTimeMap" type="RealTimeNewRoleGameTime" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="DATE_INFO" property="dateInfo" jdbcType="VARCHAR" />
+    <result column="CONTAINER_NAME" property="containerName" jdbcType="VARCHAR" />
+    <result column="CHANNEL" property="channel" jdbcType="VARCHAR" />
+    <result column="CHANNELTAG" property="channelTag" jdbcType="VARCHAR" />
+    <result column="NEW_ROLE" property="newRole" jdbcType="BIGINT" />
+    <result column="GAME_CNT" property="gameCnt" jdbcType="BIGINT" />
+    <result column="GAME_TIME" property="gameTime" jdbcType="BIGINT" />
+  </resultMap>
+  
+  
+  <select id="findNewRoleDayGametime" parameterType="pd" resultMap="GameTimeMap">
+	SELECT 
+	    DATE(USER_GAME_BASIC_INFO.ROLE_CREATE_TIME) AS DATE_INFO,
+    <if test="containerName != '' and containerName != null">
+      DICTIONARY_CONTAINER.CONTAINER_NAME AS CONTAINER_NAME,
+    </if>
+    <if test="channel != '' and channel != null">
+      DICTIONARY_CHANNEL.CHANNEL_NAME AS CHANNEL,
+    </if>
+    <if test="channelTag != '' and channelTag != null">
+      CHANNELTAG,
+    </if>
+    count(1) AS NEW_ROLE,sum(GAME_CNT) AS GAME_CNT,sum(GAME_TIME) AS GAME_TIME
+    
+    FROM USER_GAME_EXTRA_INFO_ES_ACTIVE
+      LEFT JOIN USER_GAME_BASIC_INFO
+      ON USER_GAME_BASIC_INFO.ROLE_ID = USER_GAME_EXTRA_INFO_ES_ACTIVE.ROLE_ID
+    <if test="containerName != '' and containerName != null">
+      LEFT JOIN DICTIONARY_CONTAINER
+      ON USER_GAME_BASIC_INFO.CONTAINER_NAME = DICTIONARY_CONTAINER.CONTAINER_VALUE
+    </if>
+    <if test="channel != '' and channel != null">
+      LEFT JOIN DICTIONARY_CHANNEL
+      ON USER_GAME_BASIC_INFO.CHANNEL = DICTIONARY_CHANNEL.CHANNEL_VALUE
+    </if>
+    WHERE      DATE(LOGIN_TIME) = DATE(now())
+    <if test="startD != '' and startD != null">
+      <if test="endD != '' and endD != null">
+        AND USER_GAME_BASIC_INFO.ROLE_CREATE_TIME BETWEEN #{startD} AND #{endD}
+      </if>
+    </if>
+    <if test="containerName != '' and containerName != null and containerName != 'all'">
+      AND USER_GAME_BASIC_INFO.CONTAINER_NAME = #{containerName}
+    </if>
+    <if test="channel != '' and channel != null and channel != 'all'">
+      AND USER_GAME_BASIC_INFO.CHANNEL = #{channel}
+    </if>
+    <if test="channelTag != '' and channelTag != null and channelTag != 'all'">
+      and USER_GAME_BASIC_INFO.CHANNELTAG in
+      <foreach item="item" index="index" collection="channelTag" open="(" separator="," close=")">
+        #{item}
+      </foreach>
+    </if>
+    GROUP BY 
+    <if test="containerName == 'all'">
+      USER_GAME_BASIC_INFO.CONTAINER_NAME,
+    </if>
+    <if test="channel == 'all'">
+      USER_GAME_BASIC_INFO.CHANNEL,
+    </if>
+    <if test="channelTag != '' and channelTag != null">
+      USER_GAME_BASIC_INFO.CHANNELTAG,
+    </if>
+    DATE(USER_GAME_BASIC_INFO.ROLE_CREATE_TIME)
+  </select>
+  
+  </mapper>

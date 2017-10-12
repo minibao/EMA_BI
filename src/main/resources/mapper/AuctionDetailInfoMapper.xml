@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gmtool.dao.AuctionDetailInfoMapper">
+    
+  <resultMap type="AuctionDetailInfo" id="AuctionDetailInfoMap"  >
+    <id column="ID" property="id" jdbcType="BIGINT" />
+    <result column="DATE_INFO" property="dateInfo" jdbcType="VARCHAR" />
+    <result column="CONTAINER_NAME" property="containerName" jdbcType="VARCHAR" />
+    <result column="CHANNEL" property="channel" jdbcType="VARCHAR" />
+    <result column="CHANNELTAG" property="channelTag" jdbcType="VARCHAR" />
+    <result column="UID" property="uid" jdbcType="BIGINT" />
+    <result column="LV" property="lv" jdbcType="BIGINT" />
+    <result column="AUCTION_TYPE" property="auctionType" jdbcType="VARCHAR" />
+    <result column="ITEM_ID" property="itemId" jdbcType="BIGINT" />
+    <result column="ITEM_NUM" property="itemNum" jdbcType="BIGINT" />
+    <result column="TOTAL_PRICE" property="totalPrice" jdbcType="BIGINT" />
+    <result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="UPDATE_TIME" property="updateTime" jdbcType="TIMESTAMP" />
+  </resultMap> 
+
+    <select id="findAuctionDetail" parameterType="pd" resultMap="AuctionDetailInfoMap">
+      SELECT DATE_INFO, AUCTION_DETAIL_INFO.UID AS UID,AUCTION_DETAIL_INFO.LV AS LV,
+        DICTIONARY_CONTAINER.CONTAINER_NAME,
+        DICTIONARY_CHANNEL.CHANNEL_NAME AS CHANNEL,
+        USER_GAME_BASIC_INFO.CHANNELTAG,
+        ITEM_NUM, TOTAL_PRICE, AUCTION_TYPE 
+      FROM AUCTION_DETAIL_INFO
+      LEFT JOIN USER_GAME_BASIC_INFO
+        ON UID = USER_GAME_BASIC_INFO.ROLE_ID
+      LEFT JOIN DICTIONARY_CONTAINER
+        ON USER_GAME_BASIC_INFO.CONTAINER_NAME = DICTIONARY_CONTAINER.CONTAINER_VALUE
+      LEFT JOIN DICTIONARY_CHANNEL
+        ON USER_GAME_BASIC_INFO.CHANNEL = DICTIONARY_CHANNEL.CHANNEL_VALUE
+      WHERE 
+        ITEM_ID = #{itemId} AND AUCTION_TYPE = #{auctionType}
+        <if test="lvFrom != '' and lvFrom != null">
+          <if test="lvTo != '' and lvTo != null">
+            AND (AUCTION_DETAIL_INFO.LV BETWEEN #{lvFrom} AND #{lvTo})
+          </if>
+        </if>
+        <if test="startD != '' and startD != null">
+          <if test="endD != '' and endD != null">
+            AND (AUCTION_DETAIL_INFO.DATE_INFO BETWEEN #{startD} AND #{endD})
+          </if>
+        </if>
+        <if test="containerName != '' and containerName != null and containerName != 'all'">
+          AND USER_GAME_BASIC_INFO.CONTAINER_NAME = #{containerName}
+        </if>
+        <if test="channel != '' and channel != null and channel != 'all'">
+          AND USER_GAME_BASIC_INFO.CHANNEL = #{channel}
+        </if>
+      <if test="channelTag != '' and channelTag != null and channelTag != 'all'">
+        and USER_GAME_BASIC_INFO.CHANNELTAG in
+        <foreach item="item" index="index" collection="channelTag" open="(" separator="," close=")">
+          #{item}
+        </foreach>
+      </if>
+        <if test="crstartD != '' and crstartD != null">
+          <if test="crendD != '' and crendD != null">
+            AND (USER_GAME_BASIC_INFO.ROLE_CREATE_TIME BETWEEN #{crstartD} AND #{crendD})
+          </if>
+        </if>
+      ORDER BY DATE_INFO ASC;
+    </select>
+    
+    <select id="sumerizeBankType" parameterType="pd" resultType="pd">
+      SELECT AUCTION_TYPE acountType, count(*) count
+      FROM AUCTION_DETAIL_INFO
+      LEFT JOIN USER_GAME_BASIC_INFO
+        ON UID = USER_GAME_BASIC_INFO.ROLE_ID
+      WHERE ITEM_ID = #{itemId}
+      <if test="auctionPool != '' and auctionPool != null">
+        AND AUCTION_DETAIL_INFO.AUCTION_TYPE IN
+          <foreach item="item" index="index" collection="auctionPool" open="(" separator="," close=")">
+            #{item}
+          </foreach>
+      </if>
+      <if test="lvFrom != '' and lvFrom != null">
+        <if test="lvTo != '' and lvTo != null">
+          AND (AUCTION_DETAIL_INFO.LV BETWEEN #{lvFrom} AND #{lvTo})
+        </if>
+      </if>
+      <if test="startD != '' and startD != null">
+        <if test="endD != '' and endD != null">
+          AND (AUCTION_DETAIL_INFO.DATE_INFO BETWEEN #{startD} AND #{endD})
+        </if>
+      </if>
+        <if test="containerName != '' and containerName != null and containerName != 'all'">
+      	AND USER_GAME_BASIC_INFO.CONTAINER_NAME = #{containerName}
+      </if>
+      <if test="channel != '' and channel != null and channel != 'all'">
+        AND USER_GAME_BASIC_INFO.CHANNEL = #{channel}
+      </if>
+      <if test="channelTag != '' and channelTag != null and channelTag != 'all'">
+        and USER_GAME_BASIC_INFO.CHANNELTAG in
+        <foreach item="item" index="index" collection="channelTag" open="(" separator="," close=")">
+          #{item}
+        </foreach>
+      </if>
+      <if test="crstartD != '' and crstartD != null">
+        <if test="crendD != '' and crendD != null">
+          AND (USER_GAME_BASIC_INFO.ROLE_CREATE_TIME BETWEEN #{crstartD} AND #{crendD})
+        </if>
+      </if>
+      GROUP BY AUCTION_TYPE
+      ORDER BY DATE_INFO ASC;
+    </select>
+
+</mapper>

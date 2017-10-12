@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration  PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	<!-- 命名空间 -->
+    <typeAliases>
+         <typeAlias alias="User" type="com.gmtool.entity.User"/> 
+         <!-- 通用对象 -->
+         <typeAlias alias="pd" type="com.gmtool.util.PageData"/>
+         
+         <typeAlias alias="UserRetention" type="com.gmtool.entity.UserRetention"/>
+         <typeAlias alias="UserLevel" type="com.gmtool.entity.UserLevel"/>
+         <typeAlias alias="UserMission" type="com.gmtool.entity.UserMission"/>
+         <typeAlias alias="DayOnline" type="com.gmtool.entity.DayOnline"/> 
+         <typeAlias alias="RealtimeOnline" type="com.gmtool.entity.RealtimeOnline"/>
+         <typeAlias alias="RealTimeNewRoleGameTime" type="com.gmtool.entity.RealTimeNewRoleGameTime"/>
+         <typeAlias alias="Dictionary" type="com.gmtool.entity.Dictionary"/>
+         <typeAlias alias="DayResourceCirculate" type="com.gmtool.entity.DayResourceCirculate"/>
+         <typeAlias alias="ResourceInOutAmount" type="com.gmtool.entity.ResourceInOutAmount"/>
+         <typeAlias alias="DataStatistic" type="com.gmtool.entity.DataStatistic"/>
+         <typeAlias alias="AuctionDetailInfo" type="com.gmtool.entity.AuctionDetailInfo"/>
+         <typeAlias alias="UserGameBasicInfo" type="com.gmtool.entity.UserGameBasicInfo"/>
+         <typeAlias alias="DictionaryChanneltag" type="com.gmtool.entity.DictionaryChanneltag"/>
+         <typeAlias alias="HopeUserInfo" type="com.gmtool.entity.HopeUserInfo"/>
+         
+         <typeAlias alias="SysMenu" type="com.gmtool.entity.SysMenu"/>
+         <typeAlias alias="SysRole" type="com.gmtool.entity.SysRole"/>
+         
+                  <!--用户登录 -->
+         <typeAlias alias="MemberInfo" type="com.gmtool.entity.Member"/>
+         <typeAlias alias="OperationLogInfo" type="com.gmtool.entity.OperationLogInfo"/>
+         
+    </typeAliases>    
+
+    <!-- 映射map -->
+    <mappers>
+    </mappers>
+    
+</configuration>

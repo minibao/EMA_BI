@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gmtool.dao.AuthMapper">
+
+  <resultMap type="SysRole" id="SysRoleMap">
+    <id column="ID" property="id" jdbcType="BIGINT" />
+    <result column="ROLE_ID" property="roleId" jdbcType="BIGINT" />
+    <result column="ROLE_NAME" property="roleName" jdbcType="VARCHAR" />
+    <result column="ROLE_STATUS" property="roleStatus" jdbcType="BIGINT" />
+    <result column="RIGHTS" property="rights" jdbcType="VARCHAR" />  
+    <result column="INTERFACES" property="interfaces" jdbcType="VARCHAR" />       
+  </resultMap>
+  
+  <select id="findSysRole" parameterType="SysRole" resultMap="SysRoleMap">
+    SELECT * FROM SYS_ROLE
+    WHERE 1=1
+    <if test="id != '' and id != null">
+      AND ID = #{id}
+    </if> 
+    <if test="roleId != '' and roleId != null">
+      AND ROLE_ID = #{roleId}
+    </if> 
+    <if test="roleName != '' and roleName != null">
+      AND ROLE_NAME = #{roleName}
+    </if>  
+    ORDER BY ID DESC
+  </select>
+   
+  <insert id="addSysRole" parameterType="SysRole" useGeneratedKeys="true" keyProperty="ID">
+    INSERT INTO SYS_ROLE (ID, ROLE_ID, ROLE_NAME, RIGHTS, ROLE_STATUS,INTERFACES)
+    VALUES (#{id}, #{roleId}, #{roleName}, #{rights}, #{roleStatus},#{interfaces});
+  </insert>
+
+  <update id="updateRole" parameterType="SysRole">
+    UPDATE SYS_ROLE
+    SET ROLE_NAME = #{roleName}, ROLE_STATUS = #{roleStatus}, RIGHTS = #{rights} ,INTERFACES = #{interfaces}
+    WHERE ID = #{id}
+  </update>
+
+  <delete id="deleteRoleById" parameterType="String">
+    DELETE FROM SYS_ROLE 
+    WHERE ID=#{id}
+  </delete>
+
+  <select id="getRoleNameByRoleId" parameterType="java.lang.String" resultType="com.gmtool.entity.SysRole">
+    SELECT ROLE_NAME as roleName,INTERFACES AS interfaces , APPID AS appId, CHANNELTAG AS channelTag FROM SYS_ROLE
+    WHERE role_id = #{roleId}
+  </select>
+
+</mapper>

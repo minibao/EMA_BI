@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gmtool.dao.ConfigMapper">
+    
+  <resultMap type="Dictionary" id="DictionaryOfContainerMap"  >
+    <id column="ID" property="id" jdbcType="BIGINT" />
+    <result column="CHANNEL_NAME" property="dictName" jdbcType="VARCHAR" />
+    <result column="CHANNEL_VALUE" property="dictValue" jdbcType="VARCHAR" />
+  </resultMap> 
+  
+  <resultMap type="Dictionary" id="DictionaryOfChannelMap"  >
+    <id column="ID" property="id" jdbcType="BIGINT" />
+    <result column="CONTAINER_NAME" property="dictName" jdbcType="VARCHAR" />
+    <result column="CONTAINER_VALUE" property="dictValue" jdbcType="VARCHAR" />
+  </resultMap>
+
+  <resultMap type="Dictionary" id="DictionaryOfDataMap"  >
+    <id column="ID" property="id" jdbcType="BIGINT" />
+    <result column="DICT_VALUE" property="dictType" jdbcType="VARCHAR" />
+    <result column="DICTDATA_NAME" property="dictName" jdbcType="VARCHAR" />
+    <result column="DICTDATA_VALUE" property="dictValue" jdbcType="VARCHAR" />
+  </resultMap>
+  
+  <resultMap type="Dictionary" id="DictionaryofResourceMap">
+    <id column="ID" property="id" jdbcType="BIGINT" />
+    <result column="Type" property="dictType" jdbcType="VARCHAR" />
+    <result column="RESOURCE_KEY" property="dictName" jdbcType="VARCHAR" />
+    <result column="RESOURCE_VALUE" property="dictValue" jdbcType="VARCHAR" />      
+  </resultMap>
+
+  <resultMap type="SysMenu" id="SysMenuMap">
+    <id column="ID" property="id" jdbcType="BIGINT" />
+    <result column="MENU_ID" property="menuId" jdbcType="BIGINT" />
+    <result column="MENU_NAME" property="menuName" jdbcType="VARCHAR" />
+    <result column="MENU_URL" property="menuUrl" jdbcType="VARCHAR" />
+    <result column="PARENT_ID" property="parentId" jdbcType="BIGINT" />    
+    <result column="MENU_ORDER" property="menuOrder" jdbcType="BIGINT" />    
+    <result column="MENU_ICON" property="menuIcon" jdbcType="VARCHAR" /> 
+    <result column="MENU_TYPE" property="menuType" jdbcType="VARCHAR" />
+    <result column="MENU_SHOW" property="menuShow" jdbcType="SMALLINT" />
+  </resultMap>
+
+  <resultMap type="String" id="ContainerInfoMap">
+    <result column="CHANNEL_DATA" property="channelData" jdbcType="VARCHAR" />     
+  </resultMap>
+  
+  <select id="findContainerInfo" parameterType="pd" resultMap="ContainerInfoMap">
+    SELECT CHANNEL_DATA FROM CONTAINER_INFO
+    WHERE 1=1;
+  </select>
+  
+  <select id="findSysMenu" parameterType="pd" resultMap="SysMenuMap">
+    SELECT * FROM SYS_MENU
+    <if test="parentId != '' and parentId != null">
+      AND PARENT_ID = #{parentId}
+    </if>
+    ORDER BY PARENT_ID, MENU_ORDER ASC;
+  </select>
+
+  <select id="findDictChannels" parameterType="pd" resultMap="DictionaryOfContainerMap">
+    SELECT * FROM DICTIONARY_CHANNEL
+    WHERE 1=1;
+  </select>
+
+  <select id="findDictContainers" parameterType="pd" resultMap="DictionaryOfChannelMap">
+    SELECT * FROM DICTIONARY_CONTAINER
+    WHERE 1=1;
+  </select>
+    
+  <select id="findDictData" parameterType="pd" resultMap="DictionaryOfDataMap">
+    SELECT * FROM DICTIONARY_DATA
+    WHERE 1=1
+    <if test="dictType != '' and dictType != null">
+      AND DICT_VALUE = #{dictType}
+    </if>
+  </select>
+ 
+  <select id="findDictResource" parameterType="pd" resultMap="DictionaryofResourceMap">
+    SELECT * FROM DICTIONARY_RESOURCE
+    WHERE 1=1
+    <if test="resouceType != '' and resouceType != null">
+      AND TYPE = #{resouceType}
+    </if>
+    <if test="resouceName != '' and resouceName != null">
+      AND RESOURCE_KEY = #{resouceName}
+    </if>
+  </select>
+
+</mapper>

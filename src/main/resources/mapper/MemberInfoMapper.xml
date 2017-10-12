@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gmtool.dao.MemberInfoMapper">
+ 
+  <resultMap  type="MemberInfo" id="MemberMap"  >
+    <result column="UID" property="uid" jdbcType="BIGINT" />
+    <result column="NAME" property="name" jdbcType="VARCHAR" />
+    <result column="PASSWORD" property="password" jdbcType="VARCHAR" />
+    <result column="EMAIL" property="email" jdbcType="VARCHAR" />
+    <result column="MOBILE" property="mobile" jdbcType="VARCHAR" />
+    <result column="AUTH_ROLE_ID" property="authRoleId" jdbcType="INTEGER" />
+    <result column="ROLE_NAME" property="roleName" jdbcType="VARCHAR" />
+    <result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="UPDATE_TIME" property="updateTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+  <sql id="Base_Column_List" >
+    UID, NAME, PASSWORD, EMAIL, MOBILE, AUTH_ROLE_ID, CREATE_TIME, UPDATE_TIME 
+  </sql>
+
+  <select id="selectByName" parameterType="pd" resultMap="MemberMap">
+    SELECT
+    <include refid="Base_Column_List" />
+     FROM MEMBER_BASIC_INFO
+     WHERE NAME = #{name} AND PASSWORD = #{password}
+  </select>
+
+  <select id="selectAllMember" parameterType="pd" resultMap="MemberMap">
+    SELECT UID, NAME, AUTH_ROLE_ID
+    FROM MEMBER_BASIC_INFO
+  </select>
+    <select id="listAllMember" parameterType="pd" resultMap="MemberMap">
+        SELECT  A.UID, A.NAME, A.PASSWORD, A.EMAIL, A.MOBILE, A.AUTH_ROLE_ID, B.ROLE_NAME
+         FROM MEMBER_BASIC_INFO AS A LEFT JOIN SYS_ROLE AS B  ON (A.AUTH_ROLE_ID = B.ID)
+         WHERE 1=1
+        <if test="uid != '' and uid != null">
+	      AND UID = #{uid}
+	    </if>         
+    </select>
+    
+  <select id="selectFreeMember" parameterType="pd" resultMap="MemberMap">
+    SELECT UID, NAME, AUTH_ROLE_ID
+    FROM MEMBER_BASIC_INFO
+    WHERE AUTH_ROLE_ID = 0
+  </select>
+
+  <update id="updateMemberRole" parameterType="pd">
+    UPDATE MEMBER_BASIC_INFO
+    SET AUTH_ROLE_ID = #{authRoleId}
+    WHERE 1=1 
+    <if test="roleId != '' and roleId != null">
+      AND AUTH_ROLE_ID IN (0, #{roleId})
+    </if>
+    <if test="mUidArr != '' and mUidArr != null">
+      AND UID IN
+      <foreach item="item" index="index" collection="mUidArr" open="(" separator="," close=")">
+        #{item}
+      </foreach>
+    </if>
+  </update>
+    
+  <update id="updateBasicInfo" parameterType="pd">
+    UPDATE MEMBER_BASIC_INFO
+  <set>
+    <if test="password != null" >
+      PASSWORD = #{password},
+    </if>
+    <if test="mobile != null" >
+      MOBILE = #{mobile},
+    </if>
+    <if test="email != null" >
+      EMAIL = #{email},
+    </if>
+    <if test="authRoleId != null" >
+      AUTH_ROLE_ID = #{authRoleId}
+    </if>
+  </set>
+    where UID=#{uid}
+  </update>
+  
+  <insert id="addMember" parameterType="pd" >
+    INSERT INTO MEMBER_BASIC_INFO (NAME, PASSWORD, EMAIL, MOBILE, AUTH_ROLE_ID, UPDATE_TIME, CREATE_TIME)
+    VALUES (#{name}, #{password}, #{email}, #{mobile}, #{authRoleId}, DATE(NOW()), DATE(NOW()));
+  </insert>
+
+   <delete id="deleteMember" parameterType="pd" >
+    DELETE FROM MEMBER_BASIC_INFO 
+    WHERE UID=#{uid}
+  </delete>
+  
+  
+  <select id="getInterfaces" parameterType="java.lang.Integer" resultType="com.gmtool.entity.SysRole">
+  	select 
+  		id as id,
+        APPID as appId,
+  		INTERFACES as interfaces,
+        CHANNELTAG as channelTag
+  	from SYS_ROLE where id = #{i}
+  </select>
+  
+</mapper>
